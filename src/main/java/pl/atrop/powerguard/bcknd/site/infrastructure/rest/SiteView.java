@@ -1,0 +1,2 @@
+package pl.atrop.powerguard.bcknd.site.infrastructure.rest; import pl.atrop.powerguard.bcknd.site.domain.SiteConfiguration;
+public record SiteView(Long id,String clientId,String clientName,String siteId,String name,boolean enabled,int displayOrder){ public static SiteView from(SiteConfiguration s){return new SiteView(s.id(),s.clientId(),s.clientName(),s.siteId(),s.name(),s.enabled(),s.displayOrder());}}

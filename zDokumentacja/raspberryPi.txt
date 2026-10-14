@@ -1,0 +1,249 @@
+0.
+Poprosić klienta o te dane:
+IP address:	192.168.0.102
+Netmask:	255.255.255.0
+Gateway:	192.168.0.1
+DNS:		192.168.0.1
+
+
+1.
+Wyszukanie:
+ping Powerguard-Edge.local
+
+2.
+Polączenie się:
+ssh powerguard@powerguard-edge.local
+
+3. (ewentualnie dla sprawdzenia dysku)
+lsblk -o NAME,SIZE,MODEL,MOUNTPOINTS
+
+4
+#Uruchomienie VNC client
+#On the Raspberry, connected by SSH, do:
+
+sudo raspi-config
+
+#Then choose:
+
+3 Interface Options
+    -> I3 VNC
+        -> Yes
+
+#Then reboot:
+sudo reboot
+
+===============================================================
+
+Instalacja Javy:
+1. 
+Uaktualnić pakiety Javy:
+sudo apt update && sudo apt upgrade -y
+
+2. 
+Spr. najnowszą dostępną wersję:
+apt-cache search openjdk | grep jdk
+
+3.
+Instalacja Javy:
+sudo apt install openjdk-25-jdk -y
+
+====================================================================
+
+Uruchamianie usługi na Raspberry
+
+1. Copy:
+   powerguard-edge.jar
+   run-edge.sh
+
+   to:
+   /home/powerguard/PG
+
+2. Permissions:
+
+   sudo chown -R powerguard:powerguard /home/powerguard/PG/powerguard-edge
+   chmod +x /home/powerguard/PG/powerguard-edge/run-edge.sh
+
+3. Create systemd service:
+
+   sudo nano /etc/systemd/system/powerguard-edge.service
+
+4. Paste the service definition.
+
+[Unit]
+Description=PowerGuard Edge
+Wants=network-online.target
+After=network-online.target
+
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+ExecStart=/home/powerguard/PG/powerguard-edge/run-edge.sh
+WorkingDirectory=/home/powerguard/PG/powerguard-edge
+
+StandardOutput=journal
+StandardError=journal
+
+Restart=on-failure
+RestartSec=5s
+
+User=powerguard
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+5. Reload and start:
+
+   sudo systemctl daemon-reload
+   sudo systemctl enable powerguard-edge.service
+   sudo systemctl start powerguard-edge.service
+
+6. Check:
+
+   sudo systemctl status powerguard-edge.service --no-pager -l
+
+7. Logs:
+
+   journalctl -u powerguard-edge.service -f
+
+
+
+Show only Java PIDs (process IDs)
+pgrep -a java
+
+======================================================================================
+*** Ustawienie loginu i hasła do mqtt ***
+#username:powerGuard
+
+#Wykonać
+sudo docker run --rm -it \
+  -v "$(pwd)/mosquitto/config:/mosquitto/config" \
+  eclipse-mosquitto:2 \
+  mosquitto_passwd -c /mosquitto/config/passwords powerGuard
+
+
+#utworzyć lub zmodyfikować plik
+..zRun/mosquitto/config/mosquitto.conf
+---
+listener 1883
+protocol mqtt
+
+allow_anonymous false
+password_file /mosquitto/config/passwords
+
+persistence true
+persistence_location /mosquitto/data/
+
+log_dest stdout
+
+listener 9001
+protocol websockets
+
+allow_anonymous false
+password_file /mosquitto/config/passwords
+===
+
+sudo chown -R 1883:1883 mosquitto
+sudo chmod 755 mosquitto/config
+sudo chmod 644 mosquitto/config/mosquitto.conf
+sudo chmod 640 mosquitto/config/passwords
+
+======================================================================================
+*** Uruchamianie dockera na raspberry ***
+
+
+#1. Check your raspberry
+cat /etc/os-release
+dpkg --print-architecture
+
+#Ma być arm64 and Raspberry Pi OS based on Debian Bookworm or Trixie. Jeżeli tak nie jest, nie instalować dalej!
+
+#1a. Check existing instalations (muszą być puste)
+which docker
+which podman
+snap list 2>/dev/null
+
+
+#2. Install prerequisites
+sudo apt update
+sudo apt install -y ca-certificates curl
+
+
+#3. Add Docker's official signing key:
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+
+#4. Add the repository:
+sudo tee /etc/apt/sources.list.d/docker.sources > /dev/null <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/debian
+Suites: $(. /etc/os-release && echo "$VERSION_CODENAME")
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+
+
+#5. Install Docker Engine and Compose:
+sudo apt update
+
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+
+
+#6. Start Docker automatically
+sudo systemctl enable --now docker
+
+
+#7. Verify:
+sudo systemctl status docker
+
+
+#8. Test Docker:
+sudo docker run hello-world
+
+
+#9. Use Docker without sudo
+sudo usermod -aG docker $USER
+
+#10. check:
+docker version
+docker compose version
+docker ps
+
+==============================================================================================================
+***   Static IP ***
+
+Step 1 — Open network settings in VNC (sudo raspi-config)
+1. Connect to your Raspberry Pi using VNC.
+2. Look for the Wi-Fi/network icon in the top-right corner of the desktop.
+3. Right-click the icon or open the network menu.
+4. Look for Edit Connections, Network Settings, or a similar option.
+5. Select your Wi-Fi network JalowiecZajety_5G.
+If the connection editor is available, look for IPv4 Settings.
+
+
+#1. Check your current network configuration
+
+#Current ip
+ip -4 addr
+
+#Gateway
+ip route
+
+#ethernet or wifi
+nmcli device status
+
+#Zobaczyć jak nazywa się poóączenie, np. netplan-wlan0-JalowiecZajety_5G
+
+#Sample command (nie klikać0)
+sudo nmcli connection modify \
+  "netplan-wlan0-JalowiecZajety_5G" \
+  ipv4.addresses 192.168.0.102/24 \
+  ipv4.gateway 192.168.0.1 \
+  ipv4.dns "192.168.0.1" \
+  ipv4.method manual

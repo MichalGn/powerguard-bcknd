@@ -1,0 +1,74 @@
+0.
+Usuniêcie bazy:
+drop database powerguraddb;
+\du - spr. u¿ytkowników
+
+2. Utworzyæ u¿ytkownika:
+CREATE USER programpowerguard WITH PASSWORD 'ograniczenieMocy26';
+
+
+3.
+Ustawienie DataSource
+Name=PowerGuardDS
+JNDI Name=java:jboss/datasources/PowerGuardDS   LUB      java:/PowerGuardDS    LUB    java:jboss/datasources/PostgreSQLDS
+ConnectionURL= jdbc:postgresql://localhost:5432/powerguarddb   
+Username=programpowerguard
+Password=ograniczenieMocy26
+
+--------------------------------
+5.Zalogowanie do Postgresql w bazie
+Uruchomienie postgresa
+# su - postgres
+$ psql programpowerguarddb
+programpowerguarddb=# 
+
+
+
+
+
+
+
+Dalej do poprawki: zamieniæ bigmagdb na powerguarddb
+
+--------------------------------
+6.
+Zmiana nazwy bazy danych bigmagdb na new_bigmagdb
+alter database bigmagdb rename to new_bigmagdb;
+
+--------------------------------
+7.
+Wypisanie istniej¹cych baz
+/l, lub /list
+
+
+
+-------------------------------
+8.
+Eksport bazy do pliku z kontenera dockera:
+
+Baza -> plik.sql
+docker exec -t bigmag-ep-postgresdb_container pg_dump -U postgres bigmagdb > bigmagdb-ff_bckup_250408.sql
+
+
+plik.sql -> nowa baza
+
+//1. Przegranie sql do dockera
+docker cp ./bigmagdb_bckup_250406.sql bigmag-ep-postgresdb_container:/tmp/mydb-backup.sql
+
+//2. Wejœcie do dokera
+docker exec -it bigmag-ep-postgresdb_container bash
+
+//3. usuniêcie i utworzenie nowej bazy
+docker stop bigmag-ep-frtnd_container
+docker stop bigmag-ep-postgresdb_container
+
+# Drop the database
+dropdb -U postgres bigmagdb
+
+
+
+# Recreate it
+createdb -U postgres bigmagdb
+
+//4. przekopiowanie
+psql -U postgres -d bigmagdb -f /tmp/mydb-backup.sql

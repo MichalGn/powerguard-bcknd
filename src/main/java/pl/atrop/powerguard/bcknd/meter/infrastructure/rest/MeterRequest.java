@@ -1,0 +1,1 @@
+package pl.atrop.powerguard.bcknd.meter.infrastructure.rest; import java.math.BigDecimal; public record MeterRequest(String clientId,String siteId,String edgeId,String uniqueKey,String name,BigDecimal instantaneousAlarmOnKw,BigDecimal instantaneousAlarmOffKw,BigDecimal quarterHourAlarmOnKw,BigDecimal quarterHourAlarmOffKw,boolean enabled){}

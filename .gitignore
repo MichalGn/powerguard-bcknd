@@ -1,0 +1,6 @@
+target/
+nb-configuration.xml
+*.tar
+.docker_temp_*
+*.log
+nbactions.xml

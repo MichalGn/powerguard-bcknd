@@ -1,0 +1,7 @@
+haslo do mqtt
+l:powerGurad
+p:guardPower
+
+haslo do raspberry:
+l:powerguard
+h:guardpower
