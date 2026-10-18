@@ -4,7 +4,10 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import pl.atrop.powerguard.bcknd.auth.application.SiteAccessGuard;
 import pl.atrop.powerguard.bcknd.auth.domain.UserAccount;
 import pl.atrop.powerguard.bcknd.auth.infrastructure.rest.AuthErrorResponse;
@@ -16,6 +19,8 @@ import pl.atrop.powerguard.bcknd.meter.domain.MetersService;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class MeasurementsResource {
+    private static final Logger LOG = Logger.getLogger(MeasurementsResource.class.getName());
+
     @Inject MeasurementsService service;
     @Inject MetersService meters;
     @Inject SiteAccessGuard access;
@@ -48,8 +53,17 @@ public class MeasurementsResource {
             if (toDate.isBefore(fromDate) || java.time.temporal.ChronoUnit.DAYS.between(fromDate, toDate) > 31) {
                 return Response.status(Response.Status.BAD_REQUEST).entity(new AuthErrorResponse("Invalid date range. Maximum 32 days.")).build();
             }
-            return Response.ok(service.findRange(meterId, fromDate, toDate).stream().map(MeasurementView::from).toList()).build();
+            long startedAt = System.currentTimeMillis();
+            List<MeasurementReading> readings = service.findRange(meterId, fromDate, toDate);
+            long elapsedMs = System.currentTimeMillis() - startedAt;
+            LOG.info(() -> String.format(
+                    "[MEASUREMENTS-RANGE] meterId=%d from=%s to=%s count=%d elapsedMs=%d",
+                    meterId, fromDate, toDate, readings.size(), elapsedMs));
+            return Response.ok(readings.stream().map(MeasurementView::from).toList()).build();
         } catch (Exception e) {
+            LOG.log(Level.WARNING, String.format(
+                    "[MEASUREMENTS-RANGE] failed meterId=%s from=%s to=%s",
+                    meterId, from, to), e);
             return Response.status(Response.Status.BAD_REQUEST).entity(new AuthErrorResponse("Invalid date range.")).build();
         }
     }
