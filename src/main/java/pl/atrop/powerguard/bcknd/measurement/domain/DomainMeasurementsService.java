@@ -21,7 +21,6 @@ public class DomainMeasurementsService implements MeasurementsService {
         if (input == null || input.meterId() == null || meters.findById(input.meterId()).isEmpty()) {
             return Optional.empty();
         }
-        if (input.activePowerKw() != null && input.activePowerKw().signum() < 0) return Optional.empty();
         if (input.currentQuarterPowerKw() != null && input.currentQuarterPowerKw().signum() < 0) return Optional.empty();
 
         Instant measuredAt = input.measuredAt() == null ? Instant.now() : input.measuredAt();
@@ -30,7 +29,7 @@ public class DomainMeasurementsService implements MeasurementsService {
                 input.meterId(),
                 measuredAt,
                 input.meterMeasuredAt(),
-                input.activePowerKw(),
+                input.activePowerKw(), input.activePowerSource(), input.activePowerQuality(),
                 input.activeEnergyImportKwh(),
                 input.activeEnergyExportKwh(),
                 input.currentQuarterPowerKw(),

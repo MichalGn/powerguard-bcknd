@@ -193,19 +193,20 @@ public class PowerguardMqttSubscriber implements MqttCallbackExtended {
                     .add("measuredAt", edgeAt.toString())
                     .add("meterInfo", meterJson)
                     .add("quality", quality)
-                    .add("rawObis", rawObis);
+                    .add("rawObis", rawObis)
+                    .add("telemetry", root);
             Instant meterAt = instant(timestamps, "meterTimestamp", null);
             if (meterAt == null) rawSnapshot.addNull("meterTimestamp");
             else rawSnapshot.add("meterTimestamp", meterAt.toString());
             latestRawMeasurements.put(rawKey(clientId, siteId, edgeId, meterKey), rawSnapshot.build());
         }
         MeasurementInput input = new MeasurementInput(meter.get().id(), edgeAt, instant(timestamps,"meterTimestamp",null),
-                number(values,"activePowerKw"), number(values,"activeEnergyImportKwh"), number(values,"activeEnergyExportKwh"), firstNumber(values,"currentQuarterPowerKw","current15MinPowerKw"),
+                number(values,"activePowerKw"), string(values,"activePowerSource"), string(values,"activePowerQuality"), number(values,"activeEnergyImportKwh"), number(values,"activeEnergyExportKwh"), firstNumber(values,"currentQuarterPowerKw","current15MinPowerKw"),
                 number(voltage,"l1"),number(voltage,"l2"),number(voltage,"l3"),number(current,"l1"),number(current,"l2"),number(current,"l3"),number(values,"frequencyHz"),longNumber(quality,"readDurationMs"),bool(quality,"bccValid"));
         if (measurements.record(input).isEmpty()) return;
         JsonObject live = Json.createObjectBuilder().add("messageType","meter.live").add("meterId",meter.get().id())
                 .add("clientId",clientId).add("siteId",siteId).add("edgeId",edgeId).add("meterUniqueKey",meterKey).add("status","ONLINE").add("measuredAt",edgeAt.toString())
-                .add("currentPowerKw",jsonNumberOrNull(input.activePowerKw())).add("currentQuarterPowerKw",jsonNumberOrNull(input.currentQuarterPowerKw()))
+                .add("currentPowerKw",jsonNumberOrNull(input.activePowerKw())).add("activePowerSource",input.activePowerSource() == null ? "UNAVAILABLE" : input.activePowerSource()).add("activePowerQuality",input.activePowerQuality() == null ? "UNAVAILABLE" : input.activePowerQuality()).add("currentQuarterPowerKw",jsonNumberOrNull(input.currentQuarterPowerKw()))
                 .add("activeEnergyImportKwh",jsonNumberOrNull(input.activeEnergyImportKwh())).add("activeEnergyExportKwh",jsonNumberOrNull(input.activeEnergyExportKwh()))
                 .add("voltageL1V",jsonNumberOrNull(input.voltageL1V())).add("voltageL2V",jsonNumberOrNull(input.voltageL2V())).add("voltageL3V",jsonNumberOrNull(input.voltageL3V()))
                 .add("currentL1A",jsonNumberOrNull(input.currentL1A())).add("currentL2A",jsonNumberOrNull(input.currentL2A())).add("currentL3A",jsonNumberOrNull(input.currentL3A()))

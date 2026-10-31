@@ -21,14 +21,15 @@ public class ClientsResource {
     @GET
     public Response publicClients(@HeaderParam("Authorization") String authorization) {
         Optional<UserAccount> actor = access.currentUser(authorization);
-        var visible = service.findPublicClients().stream().filter(client -> actor.isEmpty() ||
+        if (actor.isEmpty()) return Response.status(Response.Status.UNAUTHORIZED).entity(new AuthErrorResponse("Authentication required.")).build();
+        var visible = service.findPublicClients().stream().filter(client ->
                 sites.findAll().stream().anyMatch(site -> site.clientPk().equals(client.id()) && access.canAccess(actor.get(), site.id()))).map(ClientView::from).toList();
         return Response.ok(visible).build();
     }
     @GET @Path("admin")
     public Response all(@HeaderParam("Authorization") String authorization) {
         Optional<UserAccount> actor = access.currentUser(authorization);
-        if (actor.isEmpty() || !access.isAdmin(actor.get())) return denied();
+        if (actor.isEmpty() || !access.isAdminOrService(actor.get())) return denied();
         return Response.ok(service.findAll().stream().map(ClientView::from).toList()).build();
     }
     @POST

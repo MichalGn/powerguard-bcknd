@@ -53,12 +53,10 @@ public class SystemResource {
     public Response communication(@HeaderParam("Authorization") String authorization,
             @PathParam("clientId") String clientId, @PathParam("siteId") String siteId, @PathParam("edgeId") String edgeId,
             @QueryParam("meterId") String meterId, @QueryParam("from") String from, @QueryParam("to") String to) {
-        if (authorization != null && !authorization.isBlank()) {
-            Optional<UserAccount> actor = currentUser(authorization);
-            if (actor.isEmpty()) return authenticationRequired();
-            var site = sites.findByIdentity(clientId, siteId).orElse(null);
-            if (site == null || !access.canAccess(actor.get(), site.id())) return denied();
-        }
+        Optional<UserAccount> actor = currentUser(authorization);
+        if (actor.isEmpty()) return authenticationRequired();
+        var site = sites.findByIdentity(clientId, siteId).orElse(null);
+        if (site == null || !access.canAccess(actor.get(), site.id())) return denied();
         try {
             LocalDate fromDate = LocalDate.parse(from);
             LocalDate toDate = LocalDate.parse(to);
@@ -98,7 +96,10 @@ public class SystemResource {
     @GET @Path("edges/{clientId}/{siteId}/{edgeId}/measurement-data") @Produces(MediaType.APPLICATION_JSON)
     public Response measurementData(@HeaderParam("Authorization") String authorization,
             @PathParam("clientId") String clientId, @PathParam("siteId") String siteId, @PathParam("edgeId") String edgeId) {
-        if (currentAdmin(authorization).isEmpty()) return denied();
+        Optional<UserAccount> actor = currentUser(authorization);
+        if (actor.isEmpty() || (actor.get().role() != UserRole.ADMIN && actor.get().role() != UserRole.SERVICE)) return denied();
+        var site = sites.findByIdentity(clientId, siteId).orElse(null);
+        if (site == null || !access.canAccess(actor.get(), site.id())) return denied();
         return Response.ok(mqtt.rawMeasurementData(clientId, siteId, edgeId)).build();
     }
 

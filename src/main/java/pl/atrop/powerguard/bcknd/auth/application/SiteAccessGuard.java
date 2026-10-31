@@ -25,8 +25,12 @@ public class SiteAccessGuard {
         return user != null && user.role() == UserRole.ADMIN;
     }
 
+    public boolean isAdminOrService(UserAccount user) {
+        return user != null && (user.role() == UserRole.ADMIN || user.role() == UserRole.SERVICE);
+    }
+
     public boolean isManager(UserAccount user) {
-        return user != null && (user.role() == UserRole.ADMIN || user.role() == UserRole.INSTALATOR);
+        return user != null && (user.role() == UserRole.ADMIN || user.role() == UserRole.SERVICE);
     }
 
     private Optional<String> bearer(String authorization) {

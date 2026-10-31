@@ -8,6 +8,8 @@ public record MeasurementInput(
         Instant measuredAt,
         Instant meterMeasuredAt,
         BigDecimal activePowerKw,
+        String activePowerSource,
+        String activePowerQuality,
         BigDecimal activeEnergyImportKwh,
         BigDecimal activeEnergyExportKwh,
         BigDecimal currentQuarterPowerKw,

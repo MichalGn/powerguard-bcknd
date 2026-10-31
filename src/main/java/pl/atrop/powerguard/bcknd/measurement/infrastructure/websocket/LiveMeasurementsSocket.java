@@ -11,7 +11,8 @@ public class LiveMeasurementsSocket {
 
     @OnOpen
     public void onOpen(Session session) {
-        SESSIONS.add(session);
+        // Closed until token-authenticated, site-filtered live streaming is implemented.
+        try { session.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY, "Authenticated site stream required")); } catch (java.io.IOException ignored) {}
     }
 
     @OnClose

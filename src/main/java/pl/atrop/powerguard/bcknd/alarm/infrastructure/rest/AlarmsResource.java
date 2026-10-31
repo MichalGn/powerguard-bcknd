@@ -55,15 +55,10 @@ public class AlarmsResource {
         MeterConfiguration meter = meters.findById(alarm.meterId()).orElse(null);
         if (meter == null) return Response.status(Response.Status.NOT_FOUND).build();
 
-        // The public dashboard is intentionally readable without authentication,
-        // so alarm acknowledgement must also work there. If a token is supplied,
-        // still enforce the normal site-access rules.
-        if (authorization != null && !authorization.isBlank()) {
-            Optional<UserAccount> actor = access.currentUser(authorization);
-            if (actor.isEmpty()) return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity(new AuthErrorResponse("Authentication required.")).build();
-            if (!access.canAccess(actor.get(), meter.sitePk())) return forbidden();
-        }
+        Optional<UserAccount> actor = access.currentUser(authorization);
+        if (actor.isEmpty()) return Response.status(Response.Status.UNAUTHORIZED)
+                .entity(new AuthErrorResponse("Authentication required.")).build();
+        if (!access.canAccess(actor.get(), meter.sitePk())) return forbidden();
 
         String by = (acknowledgedBy == null || acknowledgedBy.isBlank()) ? "dashboard" : acknowledgedBy;
         return service.acknowledge(alarmId, by).map(a -> Response.ok(AlarmView.from(a)).build())
@@ -71,7 +66,7 @@ public class AlarmsResource {
     }
 
     private boolean allowedIfAuthenticated(String authorization, Integer meterId) {
-        if (authorization == null || authorization.isBlank()) return true;
+        if (authorization == null || authorization.isBlank()) return false;
         Optional<UserAccount> actor = access.currentUser(authorization);
         if (actor.isEmpty()) return false;
         MeterConfiguration meter = meters.findById(meterId).orElse(null);

@@ -10,6 +10,8 @@ public record MeasurementView(
         Instant measuredAt,
         Instant meterMeasuredAt,
         BigDecimal activePowerKw,
+        String activePowerSource,
+        String activePowerQuality,
         BigDecimal activeEnergyImportKwh,
         BigDecimal activeEnergyExportKwh,
         BigDecimal currentQuarterPowerKw,
@@ -22,7 +24,7 @@ public record MeasurementView(
         BigDecimal frequencyHz) {
     public static MeasurementView from(MeasurementReading m) {
         return new MeasurementView(m.id(), m.meterId(), m.measuredAt(), m.meterMeasuredAt(),
-                m.activePowerKw(), m.activeEnergyImportKwh(), m.activeEnergyExportKwh(), m.currentQuarterPowerKw(),
+                m.activePowerKw(), m.activePowerSource(), m.activePowerQuality(), m.activeEnergyImportKwh(), m.activeEnergyExportKwh(), m.currentQuarterPowerKw(),
                 m.voltageL1V(), m.voltageL2V(), m.voltageL3V(),
                 m.currentL1A(), m.currentL2A(), m.currentL3A(), m.frequencyHz());
     }

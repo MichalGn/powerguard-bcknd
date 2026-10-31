@@ -21,7 +21,7 @@ public class SqlMeasurementsRepository implements MeasurementsRepository {
         if (existing.isPresent()) return toDomain(existing.get());
         Measurements entity = new Measurements(
                 measurement.meterId(), measurement.measuredAt(), measurement.meterMeasuredAt(),
-                measurement.activePowerKw(), measurement.activeEnergyImportKwh(), measurement.activeEnergyExportKwh(),
+                measurement.activePowerKw(), measurement.activePowerSource(), measurement.activePowerQuality(), measurement.activeEnergyImportKwh(), measurement.activeEnergyExportKwh(),
                 measurement.currentQuarterPowerKw(),
                 measurement.voltageL1V(), measurement.voltageL2V(), measurement.voltageL3V(),
                 measurement.currentL1A(), measurement.currentL2A(), measurement.currentL3A(),
@@ -47,7 +47,7 @@ public class SqlMeasurementsRepository implements MeasurementsRepository {
 
     private MeasurementReading toDomain(Measurements e) {
         return new MeasurementReading(e.getId(), e.getMeterId(), e.getMeasuredAt(), e.getMeterMeasuredAt(),
-                e.getActivePowerKw(), e.getActiveEnergyImportKwh(), e.getActiveEnergyExportKwh(), e.getCurrentQuarterPowerKw(),
+                e.getActivePowerKw(), e.getActivePowerSource(), e.getActivePowerQuality(), e.getActiveEnergyImportKwh(), e.getActiveEnergyExportKwh(), e.getCurrentQuarterPowerKw(),
                 e.getVoltageL1V(), e.getVoltageL2V(), e.getVoltageL3V(),
                 e.getCurrentL1A(), e.getCurrentL2A(), e.getCurrentL3A(),
                 e.getFrequencyHz(), e.getReadDurationMs(), e.getBccValid());

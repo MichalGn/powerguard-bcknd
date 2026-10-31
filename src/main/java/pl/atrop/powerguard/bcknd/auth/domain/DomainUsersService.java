@@ -39,8 +39,8 @@ public class DomainUsersService implements UsersService {
         UserAccount actor = usersRepository.findById(actorUserId).orElse(null);
         if (actor == null || !actor.enabled()) return List.of();
         if (actor.role() == UserRole.ADMIN) return usersRepository.findAll();
-        if (actor.role() == UserRole.INSTALATOR) {
-            return usersRepository.findAll().stream().filter(u -> u.role() == UserRole.USER).toList();
+        if (actor.role() == UserRole.SERVICE) {
+            return usersRepository.findAll().stream().filter(u -> u.role() == UserRole.USER || u.role() == UserRole.ADVANCED_USER).toList();
         }
         return List.of();
     }
@@ -65,7 +65,7 @@ public class DomainUsersService implements UsersService {
         UserAccount actor = usersRepository.findById(actorUserId).orElse(null);
         if (!canManage(actor) || !validManagedInput(input, true)) return Optional.empty();
         UserRole role = input.role() == null ? UserRole.USER : input.role();
-        if (actor.role() == UserRole.INSTALATOR && role != UserRole.USER) return Optional.empty();
+        if (actor.role() == UserRole.SERVICE && role != UserRole.USER && role != UserRole.ADVANCED_USER) return Optional.empty();
         Set<Long> siteIds = normalizedSiteIds(input.siteIds());
         if (!validAssignedSites(actor, role, siteIds)) return Optional.empty();
         String username = input.username().trim();
@@ -82,10 +82,10 @@ public class DomainUsersService implements UsersService {
         UserAccount actor = usersRepository.findById(actorUserId).orElse(null);
         UserAccount existing = usersRepository.findById(targetUserId).orElse(null);
         if (!canManage(actor) || existing == null) return Optional.empty();
-        if (actor.role() == UserRole.INSTALATOR && existing.role() != UserRole.USER) return Optional.empty();
+        if (actor.role() == UserRole.SERVICE && existing.role() != UserRole.USER && existing.role() != UserRole.ADVANCED_USER) return Optional.empty();
 
         UserRole role = input.role() == null ? UserRole.USER : input.role();
-        if (actor.role() == UserRole.INSTALATOR && role != UserRole.USER) return Optional.empty();
+        if (actor.role() == UserRole.SERVICE && role != UserRole.USER && role != UserRole.ADVANCED_USER) return Optional.empty();
         Set<Long> siteIds = normalizedSiteIds(input.siteIds());
         if (!validAssignedSites(actor, role, siteIds)) return Optional.empty();
 
@@ -107,7 +107,7 @@ public class DomainUsersService implements UsersService {
         UserAccount actor = usersRepository.findById(actorUserId).orElse(null);
         UserAccount existing = usersRepository.findById(targetUserId).orElse(null);
         if (!canManage(actor) || existing == null) return false;
-        if (actor.role() == UserRole.INSTALATOR && existing.role() != UserRole.USER) return false;
+        if (actor.role() == UserRole.SERVICE && existing.role() != UserRole.USER && existing.role() != UserRole.ADVANCED_USER) return false;
         usersRepository.delete(targetUserId);
         return true;
     }
@@ -115,18 +115,18 @@ public class DomainUsersService implements UsersService {
     @Override
     public boolean canAccessSite(UserAccount user, Long siteId) {
         if (user == null || !user.enabled() || siteId == null) return false;
-        return user.role() == UserRole.ADMIN || user.siteIds().contains(siteId);
+        return user.role() == UserRole.ADMIN || user.role() == UserRole.SERVICE || user.siteIds().contains(siteId);
     }
 
     private boolean canManage(UserAccount actor) {
-        return actor != null && actor.enabled() && (actor.role() == UserRole.ADMIN || actor.role() == UserRole.INSTALATOR);
+        return actor != null && actor.enabled() && (actor.role() == UserRole.ADMIN || actor.role() == UserRole.SERVICE);
     }
 
     private boolean validAssignedSites(UserAccount actor, UserRole targetRole, Set<Long> siteIds) {
         if (targetRole == UserRole.ADMIN) return actor.role() == UserRole.ADMIN;
         Set<Long> existing = sitesRepository.findAll().stream().map(s -> s.id()).collect(java.util.stream.Collectors.toSet());
         if (!existing.containsAll(siteIds)) return false;
-        return actor.role() == UserRole.ADMIN || actor.siteIds().containsAll(siteIds);
+        return actor.role() == UserRole.ADMIN || actor.role() == UserRole.SERVICE || actor.siteIds().containsAll(siteIds);
     }
 
     private Set<Long> normalizedSiteIds(Set<Long> values) {

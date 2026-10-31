@@ -2,7 +2,8 @@ package pl.atrop.powerguard.bcknd.auth.domain;
 
 public enum UserRole {
     ADMIN,
-    INSTALATOR,
+    SERVICE,
+    ADVANCED_USER,
     USER;
 
     public static UserRole from(String value) {

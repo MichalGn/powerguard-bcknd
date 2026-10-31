@@ -72,3 +72,11 @@ createdb -U postgres bigmagdb
 
 //4. przekopiowanie
 psql -U postgres -d bigmagdb -f /tmp/mydb-backup.sql
+
+
+-------------------------------------------------------------
+
+
+BEGIN;
+UPDATE users SET role = 'ADVANCED_USER' WHERE role = 'USER';
+COMMIT;

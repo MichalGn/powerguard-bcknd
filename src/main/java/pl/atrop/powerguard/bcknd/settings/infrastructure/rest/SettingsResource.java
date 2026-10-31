@@ -22,7 +22,8 @@ public class SettingsResource {
     @Inject UsersService users;
 
     @GET
-    public Response get() {
+    public Response get(@HeaderParam("Authorization") String authorization) {
+        if (currentUser(authorization).isEmpty()) return Response.status(Response.Status.UNAUTHORIZED).entity(new AuthErrorResponse("Authentication required.")).build();
         return Response.ok(SettingsView.from(settings.get())).build();
     }
 
@@ -43,7 +44,7 @@ public class SettingsResource {
 
     private Optional<UserAccount> currentSettingsEditor(String authorization) {
         return currentUser(authorization)
-                .filter(user -> user.role() == UserRole.ADMIN || user.role() == UserRole.INSTALATOR);
+                .filter(user -> user.role() == UserRole.ADMIN || user.role() == UserRole.SERVICE);
     }
 
     private Optional<String> bearer(String authorization) {

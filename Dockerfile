@@ -1,7 +1,7 @@
 #1.
 #sudo docker build -t powerguard-bcknd_image .
 
-#sudo docker save -o powerguard-bcknd-261017.tar powerguard-bcknd_image   //Zapisanie do pliku
+#sudo docker save -o powerguard-bcknd-261030.tar powerguard-bcknd_image   //Zapisanie do pliku
 #sudo docker load -i powerguard-bcknd-231219.tar  //rozpakowanie pliku:
 
 #Otworzenie bazy w cmd
@@ -15,7 +15,7 @@
 #spr. na raspberry
 #docker image inspect powerguard-bcknd_image_arm64 --format "{{.Architecture}}"
 
-#docker save -o powerguard-bcknd-261017_arm64.tar powerguard-bcknd_image_arm64
+#docker save -o powerguard-bcknd-261030_arm64.tar powerguard-bcknd_image_arm64
 #===============================================================================
 
 

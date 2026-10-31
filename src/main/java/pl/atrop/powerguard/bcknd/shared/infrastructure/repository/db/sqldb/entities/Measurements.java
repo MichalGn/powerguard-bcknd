@@ -23,6 +23,11 @@ public class Measurements {
     @Column(name = "active_power_kw", precision = 16, scale = 6)
     private BigDecimal activePowerKw;
 
+    @Column(name = "active_power_source", length = 40)
+    private String activePowerSource;
+    @Column(name = "active_power_quality", length = 20)
+    private String activePowerQuality;
+
     @Column(name = "active_energy_import_kwh", precision = 20, scale = 6)
     private BigDecimal activeEnergyImportKwh;
 
@@ -58,7 +63,7 @@ public class Measurements {
     protected Measurements() { }
 
     public Measurements(Integer meterId, Instant measuredAt, Instant meterMeasuredAt,
-            BigDecimal activePowerKw, BigDecimal activeEnergyImportKwh, BigDecimal activeEnergyExportKwh,
+            BigDecimal activePowerKw, String activePowerSource, String activePowerQuality, BigDecimal activeEnergyImportKwh, BigDecimal activeEnergyExportKwh,
             BigDecimal currentQuarterPowerKw, BigDecimal voltageL1V, BigDecimal voltageL2V, BigDecimal voltageL3V,
             BigDecimal currentL1A, BigDecimal currentL2A, BigDecimal currentL3A,
             BigDecimal frequencyHz, Long readDurationMs, Boolean bccValid) {
@@ -66,6 +71,8 @@ public class Measurements {
         this.measuredAt = measuredAt;
         this.meterMeasuredAt = meterMeasuredAt;
         this.activePowerKw = activePowerKw;
+        this.activePowerSource = activePowerSource;
+        this.activePowerQuality = activePowerQuality;
         this.activeEnergyImportKwh = activeEnergyImportKwh;
         this.activeEnergyExportKwh = activeEnergyExportKwh;
         this.currentQuarterPowerKw = currentQuarterPowerKw;
@@ -85,6 +92,8 @@ public class Measurements {
     public Instant getMeasuredAt() { return measuredAt; }
     public Instant getMeterMeasuredAt() { return meterMeasuredAt; }
     public BigDecimal getActivePowerKw() { return activePowerKw; }
+    public String getActivePowerSource() { return activePowerSource; }
+    public String getActivePowerQuality() { return activePowerQuality; }
     public BigDecimal getActiveEnergyImportKwh() { return activeEnergyImportKwh; }
     public BigDecimal getActiveEnergyExportKwh() { return activeEnergyExportKwh; }
     public BigDecimal getCurrentQuarterPowerKw() { return currentQuarterPowerKw; }

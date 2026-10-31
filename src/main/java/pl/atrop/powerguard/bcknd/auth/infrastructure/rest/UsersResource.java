@@ -69,7 +69,7 @@ public class UsersResource {
         return bearerToken(authorization).flatMap(tokens::resolve).flatMap(usersService::findById).filter(UserAccount::enabled);
     }
     private Optional<UserAccount> currentManager(String authorization) {
-        return currentUser(authorization).filter(u -> u.role() == UserRole.ADMIN || u.role() == UserRole.INSTALATOR);
+        return currentUser(authorization).filter(u -> u.role() == UserRole.ADMIN || u.role() == UserRole.SERVICE);
     }
     private ManagedUserInput toManagedInput(ManagedUserRequest request) {
         if (request == null) return null;
